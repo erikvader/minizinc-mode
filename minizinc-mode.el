@@ -235,11 +235,14 @@ Regexp match data 0 points to the chars."
 ;;;###autoload
 (define-derived-mode minizinc-mode java-mode "MiniZinc mode"
   "Major mode for edigint minizinc source file."
+  ;TODO: fix indentation. egen style? c-offsets-alist?
   (setq mode-name "minizinc-mode")
   (setq font-lock-defaults '((minizinc-font-lock-keywords)))
-  (set (make-local-variable 'c-basic-offset) 0)
-  (setq comment-start "%")
-  (setq comment-end "")
+  (add-hook 'java-mode-hook
+            (cl-defun minizinc-add-comment ()
+              (setq comment-start "%")
+              (setq comment-end ""))
+            t t)
   (modify-syntax-entry ?% "< b" minizinc-mode-syntax-table)
   (modify-syntax-entry ?\n "> b" minizinc-mode-syntax-table)
   )
