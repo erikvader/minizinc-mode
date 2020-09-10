@@ -263,23 +263,31 @@ Regexp match data 0 points to the chars."
 ;;;;;;;;;;;;;;
 
 (when (require 'flycheck nil :noerror)
-  (flycheck-define-checker mzn2fzn
-  "A MiniZinc syntax checker using the MiniZinc compiler.
+  (flycheck-define-checker minizinc
+    "A MiniZinc syntax checker using the MiniZinc compiler.
 
   See URL `http://www.minizinc.org/'."
-  :command ("mzn2fzn" "--model-check-only" source)
-  :error-patterns
-  ((error line-start (file-name) ":" line ":\n"
-          (* any) "\n"
-          (* any) "\n"
-          "Error: " (message) line-end)
-   (error line-start (file-name) ":" line ":\n"
-          "MiniZinc:" (message) line-end))
+    :command ("minizinc" "--model-check-only" source)
+    :error-patterns
+    ((error line-start (file-name) ":" line (? "." column (? "-" end-column)) ":\n"
+            (* anychar) "\n"
+            (* anychar) "\n"
+            "Error: " (message) line-end)
+     (error line-start (file-name) ":" line (? "." column (? "-" end-column)) ":\n"
+            "MiniZinc:" (message) line-end))
+    :error-filter
+    ;; filter to make the end-column inclusive
+    (lambda (errs)
+      (dolist (err errs)
+        (let ((end (flycheck-error-end-column err)))
+          (when end
+            (setf (flycheck-error-end-column err) (1+ end)))))
+      errs)
     :modes minizinc-mode)
-  (add-to-list 'flycheck-checkers 'mzn2fzn)
   (add-hook 'minizinc-mode-hook
             (lambda ()
               (flycheck-mode))))
+  (add-to-list 'flycheck-checkers 'minizinc))
 
 (provide 'minizinc-mode)
 
