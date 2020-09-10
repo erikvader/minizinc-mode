@@ -284,9 +284,6 @@ Regexp match data 0 points to the chars."
             (setf (flycheck-error-end-column err) (1+ end)))))
       errs)
     :modes minizinc-mode)
-  (add-hook 'minizinc-mode-hook
-            (lambda ()
-              (flycheck-mode))))
   (add-to-list 'flycheck-checkers 'minizinc))
 
 (provide 'minizinc-mode)
