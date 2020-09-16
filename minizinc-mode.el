@@ -238,13 +238,21 @@ Regexp match data 0 points to the chars."
   ;TODO: fix indentation. egen style? c-offsets-alist?
   (setq mode-name "minizinc-mode")
   (setq font-lock-defaults '((minizinc-font-lock-keywords)))
+
+  ; add correct comment style
   (add-hook 'java-mode-hook
             (cl-defun minizinc-add-comment ()
               (setq comment-start "%")
-              (setq comment-end ""))
+              (setq comment-end "")
+              (setq comment-start-skip "% *"))
             t t)
   (modify-syntax-entry ?% "< b" minizinc-mode-syntax-table)
   (modify-syntax-entry ?\n "> b" minizinc-mode-syntax-table)
+
+  ; remove `c-fill-paragraph' as installed by `c-basic-common-init' and use the normal one
+  (define-key minizinc-mode-map (kbd "M-q") nil)
+  (setq-local fill-paragraph-handle-comment t)
+  (setq-local fill-paragraph-function nil)
   )
 
 
