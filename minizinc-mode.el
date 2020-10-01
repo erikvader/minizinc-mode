@@ -169,13 +169,13 @@ Regexp match data 0 points to the chars."
 (defvar minizinc-builtins
   '(;; A
     "abs" "acos" "acosh" "aisnh" "alldifferent" "ann" "annotation" "array1d"
-    "array2d" "arraynd" "asin" "assert" "assignment" "atan" "atanh"
+    "array2d" "arraynd" "asin" "assert" "assignment" "atan" "atanh" "array2set"
     ;; B
     "bool2int" "bool_search"
     ;; C
-    "card" "cos" "cosh" "cumulative" "ceil"
+    "card" "cos" "cosh" "cumulative" "ceil" "count"
     ;; D
-    "diff" "disjunctive" "dom" "domain" "dom_array"
+    "diff" "disjunctive" "dom" "domain" "dom_array" "decreasing" "diffn"
     ;; E
     "exists" "exp"
     ;; F
@@ -183,18 +183,18 @@ Regexp match data 0 points to the chars."
     ;; I
     "ifall" "index_set" "index_set_1of2" "index_set_2of2" "indomain_median"
     "indomain_min" "indomain_random" "indomain_split" "input_order" "int2float"
-    "inter" "int_search" "inverse"
+    "inter" "int_search" "inverse" "implied_constraint" "increasing" "indomain"
     ;; L
     "lb" "lb_array" "let" "ln" "log" "log2" "log10"
     ;; M
-    "max" "min" "mzn-g12fd"
+    "max" "min" "mzn-g12fd" "most_constrained"
     ;; P
     "par" "pow" "predict" "product"
     ;; R
-    "regular"
+    "regular" "redundant_constraint"
     ;; S
     "sex_search" "set_search" "show" "show_float" "show_int" "sin" "sinh"
-    "smallest" "sqrt" "sum"
+    "smallest" "sqrt" "sum" "symmetry_breaking_constraint"
     ;; T
     "table" "tan" "tanh" "test" "trace"
     ;; U
@@ -234,26 +234,34 @@ Regexp match data 0 points to the chars."
 
 ;;;###autoload
 (define-derived-mode minizinc-mode java-mode "MiniZinc mode"
-  "Major mode for edigint minizinc source file."
-  ;TODO: fix indentation. egen style? c-offsets-alist?
+  "Major mode for editing minizinc source file."
+  :after-hook (progn
+                ;; add correct comment style
+                (setq-local comment-start "%")
+                (setq-local comment-end "")
+                (setq-local comment-start-skip "% *"))
   (setq mode-name "minizinc-mode")
   (setq font-lock-defaults '((minizinc-font-lock-keywords)))
 
-  ; add correct comment style
-  (add-hook 'java-mode-hook
-            (cl-defun minizinc-add-comment ()
-              (setq comment-start "%")
-              (setq comment-end "")
-              (setq comment-start-skip "% *"))
-            t t)
   (modify-syntax-entry ?% "< b" minizinc-mode-syntax-table)
   (modify-syntax-entry ?\n "> b" minizinc-mode-syntax-table)
 
-  ; remove `c-fill-paragraph' as installed by `c-basic-common-init' and use the normal one
+  ;; remove `c-fill-paragraph' as installed by `c-basic-common-init' and use the normal one
   (define-key minizinc-mode-map (kbd "M-q") nil)
   (setq-local fill-paragraph-handle-comment t)
   (setq-local fill-paragraph-function nil)
-  )
+
+  (setq-local electric-indent-inhibit t)
+
+  (c-add-style "minizinc"
+               '((c-offsets-alist
+                  (arglist-intro . +)
+                  (arglist-close . 0)
+                  (brace-list-intro . ++)
+                  (brace-list-close . +)
+                  (brace-list-entry . +)
+                  (statement-cont . +)))
+               t))
 
 
 (setq minizinc-keywords nil)
