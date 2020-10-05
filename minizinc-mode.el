@@ -232,6 +232,26 @@ Regexp match data 0 points to the chars."
     (,minizinc-operators-regex . minizinc-operator-face)
     ))
 
+(defun minizinc-special-indent-hook ()
+  "This tries to indent sums and stuff with their special syntax.
+
+sum(blah)
+--->(asdasd)"
+  (save-excursion
+    (back-to-indentation)
+    (let ((start (point))
+          above-indent)
+      (when (eq (char-after) ?\()
+        (forward-comment (- (point)))
+        (when (and (seq-contains-p
+                    (buffer-substring-no-properties (point) start)
+                    ?\n)
+                   (eq (char-before) ?\)))
+          (setq above-indent (current-indentation))
+          (goto-char start)
+          (indent-line-to (+ above-indent
+                             c-basic-offset)))))))
+
 ;;;###autoload
 (define-derived-mode minizinc-mode java-mode "MiniZinc mode"
   "Major mode for editing minizinc source file."
@@ -260,7 +280,9 @@ Regexp match data 0 points to the chars."
                   (brace-list-intro . ++)
                   (brace-list-close . +)
                   (brace-list-entry . +)
-                  (statement-cont . +)))
+                  (statement-cont . +))
+                 (c-special-indent-hook
+                  minizinc-special-indent-hook))
                t))
 
 
